@@ -1,0 +1,2 @@
+# CM108 soundcard rules
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0d8c", ATTRS{idProduct}=="000c", GROUP="users", MODE="0666"
