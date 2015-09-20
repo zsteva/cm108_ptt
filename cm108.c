@@ -2,8 +2,6 @@
  *  Hacked-together cm108-ptt library. Nearly 100% copied from Hamlib.
  *  Do-not-trust and will-do-evil-things generally apply.
  *
- *  Also the hidraw device is hardcoded to /dev/hidraw0 (see below in cm108_open)
- *
  *  Have fun with it :D
  */
 
@@ -48,7 +46,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-
+#include <libudev.h>
 #include <sys/param.h>
 
 #include <linux/hidraw.h>
@@ -56,17 +54,72 @@
 
 
 /**
+ * Find the matching hidraw device for the given USB_VID and USB_PID.
+ * Returns the path of the found hidraw device or a null pointer if none was found.
+ */
+const char *cm108_find_device()
+{
+	struct udev *udev;
+	struct udev_enumerate *enumerate;
+	struct udev_list_entry *devices, *dev_list_entry;
+	struct udev_device *dev;
+	const char *found_path;
+
+	udev = udev_new();
+	if(!udev) {
+		printf("Can't create udev\n");
+		exit(2);
+	}
+
+	enumerate = udev_enumerate_new(udev);
+	udev_enumerate_add_match_subsystem(enumerate, "hidraw");
+	udev_enumerate_scan_devices(enumerate);
+
+	devices = udev_enumerate_get_list_entry(enumerate);
+
+	udev_list_entry_foreach(dev_list_entry, devices) {
+		const char *path, *hidraw;
+
+		path = udev_list_entry_get_name(dev_list_entry);
+		dev = udev_device_new_from_syspath(udev, path);
+
+		hidraw = udev_device_get_devnode(dev);
+
+		dev = udev_device_get_parent_with_subsystem_devtype(
+		       dev,
+		       "usb",
+		       "usb_device");
+		if (!dev) {
+			printf("Unable to find parent usb device.");
+			exit(1);
+		}
+
+		if((strcmp(udev_device_get_sysattr_value(dev, "idVendor"), CM108_VID) == 0) 
+		    && (strcmp(udev_device_get_sysattr_value(dev, "idProduct"), CM108_PID) == 0)) {
+			found_path = hidraw;
+			goto clean;
+		}
+	}
+
+clean:
+	udev_enumerate_unref(enumerate);
+	udev_unref(udev);	
+	
+	return found_path;
+}
+
+/**
  * \brief Open CM108 HID port (/dev/hidrawX)
  * \param port
  * \return file descriptor
  */
 
-int cm108_open()
+int cm108_open(const char* path)
 {
 	int fd;
 
-	fd = open("/dev/hidraw0", O_RDWR);
-
+	fd = open(path, O_RDWR);
+    
 	if (fd < 0) {
 		return -1;
 	}

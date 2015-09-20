@@ -32,8 +32,11 @@
 #ifndef _CM108_H
 #define _CM108_H 1
 
+#define CM108_VID "0d8c"
+#define CM108_PID "000c"
 
 /* Hamlib internal use, see rig.c */
+const char* cm108_find_device();
 int cm108_open();
 int cm108_close(int fd);
 void cm108_ptt_set(int fd, int state);
