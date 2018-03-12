@@ -63,7 +63,7 @@ const char *cm108_find_device()
 	struct udev_enumerate *enumerate;
 	struct udev_list_entry *devices, *dev_list_entry;
 	struct udev_device *dev;
-	const char *found_path;
+	const char *found_path = NULL;
 
 	udev = udev_new();
 	if(!udev) {
@@ -99,6 +99,12 @@ const char *cm108_find_device()
 			found_path = hidraw;
 			goto clean;
 		}
+
+		if ((strcmp(udev_device_get_sysattr_value(dev, "idVendor"), "1b3f") == 0)
+			&& (strcmp(udev_device_get_sysattr_value(dev, "idProduct"), "2008") == 0)) {
+			found_path = hidraw;
+			goto clean;
+		}
 	}
 
 clean:
@@ -116,7 +122,7 @@ clean:
 
 int cm108_open(const char* path)
 {
-	int fd;
+	int fd, ret;
 
 	fd = open(path, O_RDWR);
     
@@ -129,21 +135,20 @@ int cm108_open(const char* path)
 
 	struct hidraw_devinfo hiddevinfo;
 
-	if (!ioctl(fd, HIDIOCGRAWINFO, &hiddevinfo)
-	&&
-	  (
-	    (hiddevinfo.vendor == 0x0d8c	// CM108/109/119
-		&& hiddevinfo.product >= 0x0008
-		&& hiddevinfo.product <= 0x000f
-	    )
-	    ||
-	    (hiddevinfo.vendor == 0x0c76 &&	// SSS1621/23
-		(hiddevinfo.product == 0x1605 ||
-		hiddevinfo.product == 0x1607 ||
-		hiddevinfo.product == 0x160b)
-	    )
-	  )
-	)
+	ret = ioctl(fd, HIDIOCGRAWINFO, &hiddevinfo);
+
+
+	// CM108/109/119
+	if (!ret && (hiddevinfo.vendor == 0x0d8c && hiddevinfo.product >= 0x0008 && hiddevinfo.product <= 0x000f))
+	{
+
+	}
+	// SSS1621/23
+	else if (!ret && (hiddevinfo.vendor == 0x0c76 && (hiddevinfo.product == 0x1605 || hiddevinfo.product == 0x1607 || hiddevinfo.product == 0x160b)))
+	{
+	}
+	// 1b3f:2008 Generalplus Technology Inc.
+	else if (!ret && (hiddevinfo.vendor == 0x1b3f && hiddevinfo.product == 0x2008))
 	{
 	}
 	else
@@ -206,3 +211,4 @@ void cm108_ptt_set(int fd, int state)
 		nw = write(fd, out_rep, sizeof(out_rep));
 
 }
+

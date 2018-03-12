@@ -35,6 +35,9 @@
 #define CM108_VID "0d8c"
 #define CM108_PID "000c"
 
+// 1b3f:2008
+
+
 /* Hamlib internal use, see rig.c */
 const char* cm108_find_device();
 int cm108_open();

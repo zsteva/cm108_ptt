@@ -1,6 +1,7 @@
 #include "cm108.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 /**
  * Very simple tool to test the cm108 ptt circuit.
