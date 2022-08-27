@@ -8,3 +8,11 @@ testing as it may have all kinds of weird bugs.
 To build a test-tool which just pushes the PTT button for one second enter:
 
 ``` make ```
+
+# IMPORTANT: Create a corresponding udev rule!
+Create a rule file (for example /etc/udev/rules.d/cm108.rules) and paste this line:
+
+``` SUBSYSTEMS=="usb", ATTRS{idVendor}=="0d8c", ATTRS{idProduct}=="013c", MODE="0666" ```
+
+# ALSO IMPORTANT: newer chip revisions have a different instruction set
+Please check cm108.c and cm108.h
