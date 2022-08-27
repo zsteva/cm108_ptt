@@ -204,6 +204,17 @@ void cm108_ptt_set(int fd, int state)
 			1, // Data direction register (1=output)
 			0x00
 		};
+		
+		// newer chips have a different command structure:
+		
+		//char out_rep[] = {
+		//	0x00, // report number
+		//	// HID output report
+		//	0x00,
+		//	(state == 1) ? 0x04 : 0x00, // set GPIO
+		//	0x04, // Data direction register (4=output)
+		//	0x00
+		//};
 
 		ssize_t nw;
 
