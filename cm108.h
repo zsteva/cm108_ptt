@@ -33,7 +33,13 @@
 #define _CM108_H 1
 
 #define CM108_VID "0d8c"
+
+// select the correct PID by setting the comment tags:
+// older chips
 #define CM108_PID "000c"
+
+// newer chips
+// #define CM108_PID "013c"
 
 // 1b3f:2008
 
